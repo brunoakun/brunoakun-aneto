@@ -1,0 +1,371 @@
+﻿Build1=Default,anetocalcV4.cerolab
+File1=anetocalc.png
+File10=LyFormula02.bal
+File11=LyFormula03.bal
+File12=lyprod.bal
+File13=main.bal
+File14=TabFormulas.bal
+File15=TabProductos.bal
+File2=film-industrial.jpg
+File3=formula01_bg.jpg
+File4=formula02.jpg
+File5=formula02_bg.jpg
+File6=formula03.bal
+File7=formula03_bg.jpg
+File8=LyEjemploAnchoBotones.bal
+File9=LyFormula01.bal
+FileGroup1=Default Group
+FileGroup10=Default Group
+FileGroup11=Default Group
+FileGroup12=Default Group
+FileGroup13=Default Group
+FileGroup14=Default Group
+FileGroup15=Default Group
+FileGroup2=Default Group
+FileGroup3=Default Group
+FileGroup4=Default Group
+FileGroup5=Default Group
+FileGroup6=Default Group
+FileGroup7=Default Group
+FileGroup8=Default Group
+FileGroup9=Default Group
+Group=Default Group
+IconFile=
+Library1=core
+Library10=phone
+Library11=dguid
+Library2=reflection
+Library3=javaobject
+Library4=httputils2
+Library5=http
+Library6=json
+Library7=xui
+Library8=stringutils
+Library9=runtimepermissions
+ManifestCode='This code will be applied to the manifest file during compilation.~\n~'You do not need to modify it in most cases.~\n~'See this link for for more information: https://www.b4x.com/forum/showthread.php?p=78136~\n~AddManifestText(~\n~<uses-sdk android:minSdkVersion="4" android:targetSdkVersion="22"/>~\n~<supports-screens android:largeScreens="true" ~\n~    android:normalScreens="true" ~\n~    android:smallScreens="true" ~\n~    android:anyDensity="true"/>~\n~  )~\n~SetApplicationAttribute(android:icon, "@drawable/icon")~\n~SetApplicationAttribute(android:label, "$LABEL$")~\n~CreateResourceFromFile(Macro, Themes.DarkTheme)~\n~'End of default text.~\n~~\n~'AddPermission(android.permission.ACCESS_WIFI_STATE)~\n~'AddPermission(android.permission.READ_PHONE_STATE)	' Permiso para leer el número de teléfono~\n~~\n~AddPermission(android.permission.READ_PROFILE)     ' Allows an application to read the user's personal profile data.~\n~AddPermission(android.permission.GET_ACCOUNTS)     ' Allows an application to read the user's personal profile data.~\n~~\n~~\n~AddApplicationText(~\n~  <provider~\n~  android:name="android.support.v4.content.FileProvider"~\n~  android:authorities="$PACKAGE$.provider"~\n~  android:exported="false"~\n~  android:grantUriPermissions="true">~\n~  <meta-data~\n~  android:name="android.support.FILE_PROVIDER_PATHS"~\n~  android:resource="@xml/provider_paths"/>~\n~  </provider>~\n~)~\n~CreateResource(xml, provider_paths,~\n~   <files-path name="name" path="shared" />~\n~)~\n~
+Module1=Starter
+Module2=AcFormula01
+Module3=AcFormula02
+Module4=AcFormula03
+Module5=CustomListView
+Module6=FileProvider
+Module7=formulas
+NumberOfFiles=15
+NumberOfLibraries=11
+NumberOfModules=7
+Version=9.5
+@EndOfDesignText@
+' V4.0 - 17/03/20
+' En esta vesvión se piden los permisos para acceder ala cuenta del usuario'
+'
+#Region  Project Attributes 
+	#ApplicationLabel: AnetoCalc
+	#VersionCode: 4
+	#VersionName: 
+	'SupportedOrientations possible values: unspecified, landscape or portrait.
+	#SupportedOrientations: portrait
+	#CanInstallToExternalStorage: False
+	
+	#AdditionalJar: com.google.android.gms:play-services-base
+#End Regionº												
+
+#Region  Activity Attributes 
+	#FullScreen: False
+	#IncludeTitle: False
+#End Region
+
+Sub Process_Globals
+	'These global variables will be declared once when the application starts.
+	'These variables can be accessed from all modules.
+	Private xui As XUI
+	Dim usrEmail As String
+	Dim DeviceId As String
+End Sub
+
+Sub Globals
+	'These global variables will be redeclared each time the activity is created.
+	'These variables can only be accessed from this module.
+
+	Private LbTitulo As Label
+	Private TabHost1 As TabHost
+	Private BtContacto As Button
+	
+	Private CLV1 As CustomListView	'productos
+	Public  CLV2 As CustomListView	'Formulas
+	Private IvFoto As ImageView
+	Private LbDescrip As Label
+End Sub
+
+Sub Activity_Create(FirstTime As Boolean)
+	'Do not forget to load the layout file created with the visual designer. For example:
+	Activity.LoadLayout("main")
+	TabHost1.AddTab("CALCULADORA", "TabFormulas.bal")
+	TabHost1.AddTab("PRODUCTOS", "TabProductos.bal")
+		
+		
+	' V4
+	
+	Dim uid As cl_dgUID
+	uid.Initialize
+	Log("-------------- dgUID lib test -------------")
+	Log("SDK: "&uid.GetSDKInt)
+	Log("Android serial: "&uid.GetAndroidSerial)
+	Log("Android ID: "&uid.GetAndroidID)
+	Log("Random UUID: "&uid.GetRandomUUID)
+	Log("Gmail: "&uid.GetGAccount) 'activate permission GET_ACCOUNTS in Manifest
+	'If (uid.IsWiFiON = True) Then Log("WiFi MAC: "&uid.GetMAC) 'activate permission ACCESS_WIFI_STATE in Manifest
+	'Log("SIM state: "&uid.GetSIMState)
+	'If (uid.GetSIMSerial = 5) Then
+	'  Log("IMEI: "&uid.GetIMEI) 	'activate permission READ_PHONE_STATE in Manifest
+	'  Log("Phone number: "&uid.GetLine1Number) 'activate permission READ_PHONE_STATE in Manifest
+	'  Log("SIM subscriber ID: "& uid.GetSIMSubscriberID) 'activate permission READ_PHONE_STATE in Manifest
+	'  Log("SIM serial: "& uid.GetSIMSerial)'activate permission READ_PHONE_STATE in Manifest
+	'End If
+	Log("MyUID: "&uid.MakeDGcode0(False,False))
+	
+	'Fin V4	
+		
+	
+	DeviceId = uid.GetAndroidID
+	usrEmail = uid.GetGAccount
+	
+	GrabaAcceso		' grabar resitro en la tabla
+	
+	''''''''''''''''''''''''''''
+	' CARGAR LISTA DE PRODUCTOS
+	''''''''''''''''''''''''''''
+	
+	Dim foto As Bitmap
+	Dim texto As String
+	
+	Dim fotos As List
+	fotos.Initialize
+	fotos.Add("film-industrial.jpg")
+	fotos.Add("Papel.jpg")
+	fotos.Add("burbuja.jpg")
+	fotos.Add("precinto.jpg")
+	fotos.Add("carton-ondulado.jpg")
+	fotos.Add("cinta-impresa.jpg")
+	
+	Dim textos As List
+	textos.Initialize
+	textos.Add("FILM ESTIRABLE")
+	textos.Add("Papel Kraft y alimentación")
+	textos.Add("Relleno y Protección")
+	textos.Add("Precinto")
+	textos.Add("Carton Ondulado")
+	textos.Add("Cinta adhesiva y precinto impreso")
+	
+	For f=0 To 5
+		foto = LoadBitmapResize(File.DirAssets, fotos.Get(f), 100dip, 100dip, True)
+		texto=textos.Get(f)
+		CLV1.Add(CreateItem(foto,texto) , "" )
+	Next
+	
+	
+	''''''''''''''''''''''''''''
+	' CARGAR LISTA DE FORMULAS
+	''''''''''''''''''''''''''''
+	
+	Dim foto As Bitmap
+	Dim texto As String
+	
+	Dim fotos As List
+	fotos.Initialize
+	fotos.Add("formula01.jpg")
+	fotos.Add("formula02.jpg")
+	fotos.Add("formula03.jpg")
+	fotos.Add("formula04.jpg")
+	
+	Dim textos As List
+	textos.Initialize
+	textos.Add("Formato industrial - Calculo metros")
+	textos.Add("Formato industrial - Cálculo Micras")
+	textos.Add("Cálculo Preestiro")
+	textos.Add("Peso Palet (Formatos más habituales)")
+	
+	For f=0 To 3
+		foto = LoadBitmapResize(File.DirAssets, fotos.Get(f), 100dip, 100dip, True)
+		texto=textos.Get(f)
+		CLV2.Add(CreateItem(foto,texto) , "" )
+	Next
+	
+	Activity.AddMenuItem("Salir","fin")
+End Sub
+
+private Sub CreateItem(img As Bitmap, descripcion As String) As B4XView
+	Dim p As B4XView = xui.CreatePanel("")
+	p.SetLayoutAnimated(0,0,0,93%x, 120dip)
+	p.LoadLayout("LyProd")
+	IvFoto.Bitmap=img
+	LbDescrip.Text=descripcion
+	Return p
+End Sub
+
+private Sub fin_click
+	Log("SALIR")
+End Sub
+
+
+
+
+Sub Activity_Resume
+	'ToastMessageShow("AnetoCalc Hasta pronto!", True)
+End Sub
+
+Sub Activity_Pause (UserClosed As Boolean)
+
+End Sub
+
+
+
+
+'**********
+' FUNCIONES
+'**********
+
+'Grabar daros en MySql
+Sub GrabaAcceso As String
+	Try
+		Dim InsertAcceso As HttpJob
+		InsertAcceso.Initialize("InsertAc", Me)
+		InsertAcceso.download2("http://cerolab.com/proyectos/aneto/x_accesos.php", Array As String  ("action", "InsertAcceso", "id_dispositivo", DeviceId, "email", usrEmail))
+		Return ("Ok")	
+	Catch
+		Log(LastException.Message)
+		Return ("Error:" & LastException.Message)
+	End Try
+End Sub
+
+
+
+' Ha finalizado un proceso Http
+Sub JobDone(Job As HttpJob)
+	ProgressDialogHide
+	If Job.Success Then
+		Dim res As String
+		res = Job.GetString
+		Log("Back from Job:" & Job.JobName )
+		Log("Response from server: " & res)
+				
+		Dim parser As JSONParser
+		parser.Initialize(res)
+		
+		Select Job.JobName
+		
+			Case "CountP"
+			'	PersonsListview.AddSingleLine ("Persons in table: " & parser.NextValue)
+				
+			Case "InsertAc"	
+			'	ToastMessageShow("Insertado registro " & res, True)
+				
+		End Select
+		
+		
+		
+	Else
+		ToastMessageShow("Error: " & Job.ErrorMessage, True)
+	End If
+	Job.Release
+End Sub
+
+'''''''''''''''''''''''
+
+'Click en PRODUCTO
+Sub CLV1_ItemClick (Index As Int, Value As Object)
+	Index = Index+1
+	If Index=1 Then OpenPdf("producto01.pdf")
+	If Index=2 Then OpenPdf("producto02.pdf")
+	If Index=3 Then OpenPdf("producto03.pdf")
+	If Index=4 Then OpenPdf("producto04.pdf")
+	CLV1.Refresh
+End Sub
+
+
+'Click en FORMULA
+Sub CLV2_ItemClick (Index As Int, Value As Object)
+	Index = Index+1
+	If Index=1 Then StartActivity("AcFormula01")
+	If Index=2 Then StartActivity("AcFormula02")
+	If Index=3 Then StartActivity("AcFormula03")
+	If Index=4 Then OpenPdf("medidaspalet.pdf")
+	CLV2.Refresh
+End Sub
+
+'''''''''''''''''''''''''''
+
+Sub OpenPdf(fichero As String)
+	Try
+		''********  PDF
+		Log("OpenPdf:"&fichero)
+		Dim FileName As String = fichero
+		
+		'Log("File.DirAssets: " & File.DirAssets)
+		'Log("FileName: " & FileName)
+		'Log("Starter.Provider.SharedFolder: " & Starter.Provider.SharedFolder)
+				
+		File.Copy(File.DirAssets, FileName, Starter.Provider.SharedFolder, FileName)
+		Dim in As Intent
+		in.Initialize(in.ACTION_VIEW, "")
+		Starter.Provider.SetFileUriAsIntentData(in, FileName)
+		'Type must be set after calling SetFileUriAsIntentData
+		in.SetType("application/pdf")
+		StartActivity(in)
+		''******** END OF PDF
+
+		'''********** WORD
+'	Log("New Purchase Order Rev 3.docx")
+'	Dim FileName As String = "New Purchase Order Rev 3.docx"
+'	File.Copy(File.DirAssets, FileName, Starter.Provider.SharedFolder, FileName)
+'	Dim in As Intent
+'	in.Initialize(in.ACTION_VIEW, "")
+'	Starter.Provider.SetFileUriAsIntentData(in, FileName)
+'	'Type must be set after calling SetFileUriAsIntentData
+'	in.SetType("Application/vnd.ms-word")
+'	StartActivity(in)
+		'''******* End Of Word
+
+'	''********** Text
+'	Log("TPLink Connect.txt")
+'	Dim FileName As String = "TPLink Connect.txt"
+'	File.Copy(File.DirAssets, FileName, Starter.Provider.SharedFolder, FileName)
+'	Dim in As Intent
+'	in.Initialize(in.ACTION_VIEW, "")
+'	Starter.Provider.SetFileUriAsIntentData(in, FileName)
+'	'Type must be set after calling SetFileUriAsIntentData
+'	in.SetType("text/*")
+'	StartActivity(in)
+'		''******* End Of Text
+	
+		'''********** HTML
+'	Log("kb4344146_20180823_153532367.html")
+'	Dim FileName As String = "kb4344146_20180823_153532367.html"
+'	File.Copy(File.DirAssets, FileName, Starter.Provider.SharedFolder, FileName)
+'	Dim in As Intent
+'	in.Initialize(in.ACTION_VIEW, "")
+'	Starter.Provider.SetFileUriAsIntentData(in, FileName)
+'	'Type must be set after calling SetFileUriAsIntentData
+'	in.SetType("text/html")
+'	StartActivity(in)
+		'''******* End Of HTML
+
+''********** Unknown - use extension
+'	Log("CycleCountInfoDollars.xlsx")
+'		Dim FileName As String = "CycleCountInfoDollars.xlsx"
+'		Dim T As String = "CycleCountInfoDollars.xlsx"
+'		T =  T.SubString(T.LastIndexOf("."))
+'		T = T.ToLowerCase
+'		File.Copy(File.DirAssets, FileName, Starter.Provider.SharedFolder, FileName)
+'		Dim in As Intent
+'		in.Initialize(in.ACTION_VIEW, "")
+'		Starter.Provider.SetFileUriAsIntentData(in, FileName)
+'		'Type must be set after calling SetFileUriAsIntentData
+'		in.SetType("application/" & T & "*")
+'		StartActivity(in)
+		''******* End Of Unknown - use extension
+	
+	Catch
+		Log(LastException.Message)
+	End Try
+
+End Sub
